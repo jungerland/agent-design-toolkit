@@ -76,12 +76,21 @@ The entire tool is a single self-contained HTML file — no build step, no depen
 
 ### Optional: run with a local proxy
 
-To avoid pasting your API key into the page, run the included proxy. It serves the tool and adds your key from the environment, so the key never reaches the browser. Requires Node 18+.
+To avoid pasting your API key into the page, run the included proxy. It serves the tool and adds your key from the environment, so the key never reaches the browser. Requires Node 20.6+.
+
+Put your key in a `.env` file in the repo folder (it's gitignored):
 
 ```
-export ANTHROPIC_API_KEY=sk-ant-...
-node server.js
+ANTHROPIC_API_KEY=sk-ant-...
 ```
+
+Then start the proxy:
+
+```
+node --env-file=.env server.js
+```
+
+Avoid exporting `ANTHROPIC_API_KEY` in your shell profile (`~/.zshrc`, `~/.bashrc`). Other tools read that variable too. Claude Code, for example, will bill that API key instead of your Claude subscription.
 
 Then open http://localhost:8787. When loaded from localhost, the page uses the proxy automatically; opened any other way, it works as before.
 
