@@ -522,6 +522,16 @@ Rules:
 
 function fill(t){ document.getElementById('req').value=t; }
 
+const PROXY=location.protocol==='http:'&&['localhost','127.0.0.1'].includes(location.hostname);
+const API_URL=PROXY?'/v1/messages':'https://api.anthropic.com/v1/messages';
+if(PROXY){
+  document.getElementById('apiKey').disabled=true;
+  document.getElementById('apiKey').placeholder='Using ANTHROPIC_API_KEY via local proxy';
+  document.getElementById('apiDot').style.background='#3a9a50';
+  document.getElementById('apiInd').className='api-ind ok';
+  document.getElementById('apiTxt').textContent='Local proxy';
+}
+
 document.getElementById('apiKey').addEventListener('input',function(){
   const k=this.value.trim();
   const dot=document.getElementById('apiDot');
@@ -816,7 +826,7 @@ async function run(){
   hideErr();
   const key=document.getElementById('apiKey').value.trim();
   const req=document.getElementById('req').value.trim();
-  if(!key){ showErr('Enter your Anthropic API key above first.'); return; }
+  if(!key&&!PROXY){ showErr('Enter your Anthropic API key above first.'); return; }
   if(!req){ showErr('Please describe what you want your agent to do.'); return; }
 
   const btn=document.getElementById('runBtn');
@@ -836,10 +846,12 @@ async function run(){
   try{
     const headers={
       'Content-Type':'application/json',
-      'x-api-key':key,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
+      'anthropic-version':'2023-06-01'
     };
+    if(!PROXY){
+      headers['x-api-key']=key;
+      headers['anthropic-dangerous-direct-browser-access']='true';
+    }
 
     // CALL 1: Interpretation + Decisions + KB + Memory
     btn.querySelector('span').textContent='Reading requirement…';
@@ -869,7 +881,7 @@ Return ONLY this JSON structure, nothing else:
   }
 }`;
 
-    const res1=await callModel('https://api.anthropic.com/v1/messages',headers,{
+    const res1=await callModel(API_URL,headers,{
       max_tokens:16000,
       system:SYSTEM_A,
       messages:[{role:'user',content:`Requirement: "${req}"\n\nReturn ONLY the JSON object.`}]
@@ -893,7 +905,7 @@ Return ONLY this JSON, nothing else:
   "logging_schema": {"event_name":"string","fields":[{"name":"string","type":"string","note":"string"}],"retention":"string","key_queries":[{"who":"string","query":"string"}],"dedup_logic":"string"}
 }`;
 
-    const res2=await callModel('https://api.anthropic.com/v1/messages',headers,{
+    const res2=await callModel(API_URL,headers,{
       max_tokens:20000,
       system:SYSTEM_B,
       messages:[{role:'user',content:`Requirement: "${req}"\n\nReturn ONLY the JSON object.`}]
@@ -921,7 +933,7 @@ Return ONLY this JSON, nothing else:
   }
 }`;
 
-    const res3=await callModel('https://api.anthropic.com/v1/messages',headers,{
+    const res3=await callModel(API_URL,headers,{
       max_tokens:6000,
       system:SYSTEM_C,
       messages:[{role:'user',content:`Requirement: "${req}"\n\nReturn ONLY the JSON object.`}]
