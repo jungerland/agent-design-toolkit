@@ -1,6 +1,6 @@
 // Local proxy: serves index.html and forwards /v1/messages to Anthropic
 // with ANTHROPIC_API_KEY from the environment, so the key never touches the browser.
-// Usage: ANTHROPIC_API_KEY=sk-ant-... node server.js   then open http://localhost:8787
+// Usage: node --env-file=.env server.js   then open http://localhost:8787
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -8,7 +8,7 @@ const path = require('path');
 const PORT = process.env.PORT || 8787;
 const KEY = process.env.ANTHROPIC_API_KEY;
 if (!KEY) {
-  console.error('ANTHROPIC_API_KEY is not set.');
+  console.error('ANTHROPIC_API_KEY is not set. Add it to .env and run: node --env-file=.env server.js');
   process.exit(1);
 }
 
